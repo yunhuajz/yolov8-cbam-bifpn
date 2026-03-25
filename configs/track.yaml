@@ -1,0 +1,71 @@
+# ByteTrack 多目标跟踪配置文件
+# 适用于YOLOv8的track()方法
+
+# 跟踪器类型
+tracker_type: bytetrack  # 跟踪器类型，可选: bytetrack, botsort
+
+# 检测阈值配置
+track_high_thresh: 0.5  # 高置信度检测阈值，高于此阈值的检测框直接作为轨迹
+track_low_thresh: 0.1   # 低置信度检测阈值，低于此阈值的检测框被丢弃
+new_track_thresh: 0.6   # 新轨迹创建阈值，检测框与现有轨迹匹配分数需高于此值才创建新轨迹
+
+# 匹配阈值
+match_thresh: 0.8  # 轨迹匹配阈值，IOU或特征相似度高于此值则匹配成功
+
+# 轨迹管理参数
+track_buffer: 30  # 轨迹缓冲帧数，轨迹丢失后保留的最大帧数
+min_box_area: 10  # 最小边界框面积（像素），小于此面积的检测框被忽略，过滤噪声
+fuse_score: true  # 是否融合检测分数到匹配分数中
+fuse_kalman: true  # 是否使用卡尔曼滤波预测轨迹位置
+with_reid: false  # 是否使用重识别特征，BoT-SORT需要设为true
+
+# 卡尔曼滤波参数（如果使用）
+kalman_filter:
+  std_weight_position: 0.1  # 位置标准差权重
+  std_weight_velocity: 0.1  # 速度标准差权重
+
+# 特征提取参数（如果使用重识别）
+reid_model: null  # 重识别模型路径
+reid_batch_size: 16  # 重识别批处理大小
+reid_size: [256, 128]  # 重识别输入尺寸 [height, width]
+
+# 轨迹初始化参数
+init_score_thresh: 0.7  # 轨迹初始化分数阈值
+init_track_id: 0  # 初始轨迹ID
+
+# 轨迹终止参数
+max_time_lost: 30  # 轨迹最大丢失时间（帧），超过此值则终止轨迹
+min_hits: 3  # 最小命中次数，轨迹需要至少被检测到min_hits次才被确认
+
+# 外观特征参数（如果使用）
+appearance_thresh: 0.25  # 外观特征匹配阈值
+max_dist: 0.2  # 最大特征距离
+metric: cosine  # 特征距离度量方式，可选: cosine, euclidean
+
+# 运动模型参数
+motion_model: kalman  # 运动模型类型，可选: kalman, constant_velocity
+use_byte: true  # 是否使用ByteTrack的BYTE关联策略
+use_cmc: false  # 是否使用相机运动补偿
+
+# 输出配置
+save_tracks: true  # 是否保存跟踪结果
+save_vid: true  # 是否保存跟踪视频
+save_mot: true  # 是否保存MOT格式结果
+mot_format: true  # MOT格式：<frame>, <id>, <bb_left>, <bb_top>, <bb_width>, <bb_height>, <conf>, -1, -1, -1
+
+# 显示配置
+show_tracks: true  # 是否显示跟踪结果
+track_line_width: 2  # 跟踪框线宽
+track_font_size: 12  # 跟踪ID字体大小
+track_color_by_id: true  # 是否按ID分配颜色
+track_history: 30  # 显示轨迹历史长度（帧）
+
+# 性能优化
+use_cuda: true  # 是否使用CUDA加速
+half_precision: false  # 是否使用半精度推理
+fuse_model: true  # 是否融合模型层加速推理
+
+# 调试配置
+debug: false  # 是否启用调试模式
+verbose: false  # 是否显示详细日志
+save_debug_info: false  # 是否保存调试信息

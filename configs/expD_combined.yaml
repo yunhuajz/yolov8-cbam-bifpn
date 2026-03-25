@@ -1,0 +1,67 @@
+# 实验D: CBAM + BiFPN联合
+# ============================================
+# 骨干网络：标准0-9层（Conv, C2f, SPPF）
+# 先对P3(层4)、P4(层6)、P5(层9)分别应用CBAM增强
+# 然后使用BiFPN结构，接收增强后的特征
+# 检测头：1个Detect层，接收三个特征（P3, P4, P5）
+
+# Parameters
+nc: 4  # number of classes (car, bus, van, truck)
+depth_multiple: 1.0
+width_multiple: 1.0
+
+# YOLOv8n backbone (层0-9)
+backbone:
+  - [-1, 1, Conv, [64, 3, 2]]    # 0-P1/2
+  - [-1, 1, Conv, [128, 3, 2]]   # 1-P2/4
+  - [-1, 3, C2f, [128, True]]    # 2
+  - [-1, 1, Conv, [256, 3, 2]]   # 3-P3/8
+  - [-1, 6, C2f, [256, True]]    # 4-P3 (80x80)
+  - [-1, 1, Conv, [512, 3, 2]]   # 5-P4/16
+  - [-1, 6, C2f, [512, True]]    # 6-P4 (40x40)
+  - [-1, 1, Conv, [1024, 3, 2]]  # 7-P5/32
+  - [-1, 3, C2f, [1024, True]]   # 8
+  - [-1, 1, SPPF, [1024, 5]]     # 9-P5 (20x20)
+
+# CBAM + BiFPN neck
+head:
+  # ===== CBAM注意力层 (层10-12) =====
+  - [4, 1, CBAM, [256]]     # 10-CBAM_P3 (80x80)
+  - [6, 1, CBAM, [512]]     # 11-CBAM_P4 (40x40)
+  - [9, 1, CBAM, [1024]]    # 12-CBAM_P5 (20x20)
+
+  # ===== BiFPN: 自顶向下 =====
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']]  # 13-CBAM_P5->40x40
+  - [[-1, 11], 1, Concat, [1]]  # 14-CBAM_P4+CBAM_P5_up
+  - [-1, 3, C2f, [512]]         # 15-P4_td (40x40)
+
+  - [-1, 1, nn.Upsample, [None, 2, 'nearest']]  # 16-P4_td->80x80
+  - [[-1, 10], 1, Concat, [1]]  # 17-CBAM_P3+P4_td
+  - [-1, 3, C2f, [256]]         # 18-P3_td (80x80)
+
+  # ===== BiFPN: 自底向上 =====
+  - [18, 1, Conv, [256, 1, 1]]   # 19-P3_out (80x80)
+
+  - [-1, 1, Conv, [512, 3, 2]]  # 20-P3_out下采样->40x40
+  - [[-1, 15], 1, Concat, [1]]  # 21-P4_td+P3_down (40x40+40x40)
+  - [-1, 3, C2f, [512]]         # 22-P4_out (40x40)
+
+  - [-1, 1, Conv, [1024, 3, 2]] # 23-P4_out下采样->20x20
+  - [[-1, 12], 1, Concat, [1]]  # 24-CBAM_P5+P4_down (20x20+20x20)
+  - [-1, 3, C2f, [1024]]        # 25-P5_out (20x20)
+
+  # Detection: 3个输入
+  - [[19, 22, 25], 1, Detect, [4]]  # 26
+
+# 层索引:
+# Backbone: 0-9
+#   4=P3, 6=P4, 9=P5
+# CBAM: 10-12
+#   10=CBAM_P3, 11=CBAM_P4, 12=CBAM_P5
+# BiFPN: 13-26
+#   13=Upsample, 14=Concat, 15=P4_td
+#   16=Upsample, 17=Concat, 18=P3_td
+#   19=P3_out (检测输入1)
+#   20=Conv, 21=Concat, 22=P4_out (检测输入2)
+#   23=Conv, 24=Concat, 25=P5_out (检测输入3)
+#   26=Detect([19,22,25])

@@ -1,0 +1,84 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# 测试相关
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# 项目特定 - 大数据目录
+data/UA-DETRAC-G2/
+!data/.gitkeep
+!data/README.md
+
+# 训练输出（保留目录结构但忽略内容）
+runs/*
+!runs/.gitkeep
+
+# 模型权重文件
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+
+# 结果文件
+results.csv
+*.log
+
+# 临时文件
+temp/
+tmp/
+*.tmp
+
+# 结果目录（可选保留，但建议忽略大文件）
+metrics/*.csv
+picture/*.png
+
+# 开发文档（简化后不需要）
+CLAUDE.md
+AUTODL_DEPLOY.md
+DEPLOY_GUIDE.md
+
+# Claude配置
+.claude/
+.claudeignore

@@ -1,0 +1,7 @@
+# UA-DETRAC.yaml
+path: "./data/UA-DETRAC-G2"  # 数据集根目录 (相对路径，基于项目根目录)
+train: images/train   # 训练图片相对路径
+val: images/val       # 验证图片相对路径
+
+nc: 4                 # 类别数量
+names: ['car', 'bus', 'van', 'truck']  # 与ID顺序严格对应

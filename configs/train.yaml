@@ -1,0 +1,99 @@
+# YOLOv8 训练配置文件
+# 适用于UA-DETRAC数据集（小目标、夜间场景）
+
+# 基础配置
+task: detect  # 任务类型：检测
+mode: train   # 模式：训练
+model: yolov8n.pt  # 预训练模型，可选: yolov8n.pt, yolov8s.pt, yolov8m.pt等
+data: configs/UA-DETRAC.yaml
+
+# 训练超参数
+epochs: 100  # 训练轮数，建议100-300轮
+patience: 50  # 早停耐心值，连续patience轮验证指标无改善则停止训练
+batch: 16  # 批次大小，根据GPU内存调整
+imgsz: 640  # 输入图像尺寸，YOLOv8支持多种尺寸
+device: 0  # 训练设备，0表示GPU0，cpu表示CPU，多个GPU用逗号分隔如0,1
+workers: 8  # 数据加载线程数
+project: ../runs  # 结果保存目录
+name: train  # 实验名称
+exist_ok: false  # 是否覆盖同名实验
+pretrained: true  # 是否使用预训练权重
+optimizer: auto  # 优化器，auto自动选择，可选SGD/Adam/AdamW
+verbose: true  # 是否显示详细输出
+seed: 42  # 随机种子
+deterministic: true  # 是否启用确定性算法
+single_cls: false  # 是否将所有类别视为单一类别
+
+# 学习率调度
+lr0: 0.01  # 初始学习率
+lrf: 0.01  # 最终学习率系数，最终学习率 = lr0 * lrf
+momentum: 0.937  # SGD动量
+weight_decay: 0.0005  # 权重衰减，防止过拟合
+warmup_epochs: 3.0  # 学习率预热轮数
+warmup_momentum: 0.8  # 预热阶段动量
+warmup_bias_lr: 0.1  # 预热阶段偏置学习率
+
+# 损失函数权重
+box: 7.5  # 边界框损失权重
+cls: 0.5  # 分类损失权重
+dfl: 1.5  # 分布焦点损失权重（YOLOv8特有）
+pose: 12.0  # 姿态损失权重（姿态估计任务用）
+kobj: 1.0  # 关键点对象损失权重
+label_smoothing: 0.0  # 标签平滑系数，防止过拟合
+nbs: 64  # 名义批次大小，用于梯度累积
+
+# 数据增强 - 针对小目标和夜间场景优化
+hsv_h: 0.015  # 色调增强幅度（0-1），夜间场景色调变化小
+hsv_s: 0.7  # 饱和度增强幅度（0-1），夜间场景饱和度较低
+hsv_v: 0.4  # 明度增强幅度（0-1），夜间场景亮度较低
+degrees: 0.0  # 旋转角度范围（度），小目标旋转可能影响识别
+translate: 0.1  # 平移幅度（比例），小目标需要较小的平移
+scale: 0.5  # 缩放幅度（比例），小目标需要保留细节
+shear: 0.0  # 剪切幅度（度），小目标剪切可能影响形状
+perspective: 0.0  # 透视变换幅度（0-0.001），小目标透视变换影响小
+flipud: 0.0  # 上下翻转概率，交通场景一般不上下翻转
+fliplr: 0.5  # 左右翻转概率，交通场景可以左右翻转
+mosaic: 1.0  # 马赛克增强概率，小目标适合马赛克增强
+mixup: 0.0  # MixUp增强概率，夜间场景MixUp可能不适用
+copy_paste: 0.0  # Copy-Paste增强概率，小目标Copy-Paste可能不自然
+
+# 训练策略
+rect: false  # 是否使用矩形训练（减少填充）
+cos_lr: false  # 是否使用余弦退火学习率
+close_mosaic: 10  # 最后多少轮关闭马赛克增强
+resume: false  # 是否从检查点恢复训练
+amp: true  # 是否启用自动混合精度训练，节省显存加速训练
+fraction: 1.0  # 使用数据集的比例（0-1），用于快速测试
+
+# 验证配置
+val: true  # 是否进行验证
+save_json: false  # 是否保存JSON格式结果
+save_hybrid: false  # 是否保存混合标签
+conf: 0.001  # 验证时置信度阈值
+iou: 0.6  # 验证时NMS IOU阈值，小目标需要较高的IOU阈值
+max_det: 300  # 每张图像最大检测数
+half: false  # 是否使用半精度验证
+dnn: false  # 是否使用OpenCV DNN进行ONNX推理
+plots: true  # 是否生成训练曲线图
+
+# 保存配置
+save_period: -1  # 每多少轮保存检查点，-1表示只在最后保存
+save_txt: false  # 是否保存检测结果为txt文件
+save_conf: false  # 是否在txt文件中保存置信度
+save_crop: false  # 是否保存裁剪的检测目标
+
+# 显示配置
+show_labels: true  # 是否显示标签
+show_conf: true  # 是否显示置信度
+show_boxes: true  # 是否显示边界框
+
+# 导出配置
+format: torchscript  # 导出格式，可选torchscript, onnx, openvino等
+keras: false  # 是否导出为Keras格式
+optimize: false  # 是否优化导出模型
+int8: false  # 是否进行INT8量化
+dynamic: false  # 是否使用动态输入尺寸
+simplify: false  # 是否简化模型
+opset: null  # ONNX opset版本
+workspace: 4  # TensorRT工作空间大小(GB)
+nms: false  # 是否在导出模型中包含NMS
